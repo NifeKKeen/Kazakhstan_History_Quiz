@@ -1,8 +1,8 @@
 {
   "name": "kazakhstan_history_quiz",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "1.0.1",
+  "description": "Offline web-page designed to preparation for Kazakhstan UNT - Kazakhstan History subject.",
+  "main": "",
   "scripts": {
     "test": "node src/unitTests.mjs",
     "dev": "cross-env NODE_ENV=development webpack --config webpack.config.mjs",
