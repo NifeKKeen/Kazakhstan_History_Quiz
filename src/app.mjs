@@ -142,7 +142,7 @@ export class App {
     handleTicketChange(ev) {
         const quizName = ev.currentTarget.textContent;
         if (!this.changeTicket(quizName)) {
-            this.handleStatus("Қанат где-то лоханулся priorety");
+            this.handleStatus("Қанат где-то лоханулся");
             return false;
         }
 
