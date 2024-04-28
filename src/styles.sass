@@ -1,0 +1,319 @@
+$deny-color: #ff2727
+$accept-color: #33ff05
+$warn-color: #ff0
+$warn-color-border: #ffd54b
+
+*
+  box-sizing: border-box
+  margin: 0
+  padding: 0
+  font-family: PT Root UI,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol
+  font-size: 1.1rem
+
+button
+  cursor: pointer
+  color: black
+
+body
+  min-width: 300px
+/* header */
+.header
+  min-height: 5svh
+  padding: 10px 100px
+
+  border-bottom: 1px solid black
+  background-color: #F9F9F9
+
+  &__title
+    font-family: "Roboto Light", sans-serif
+    font-size: 2rem
+  &__nav
+    display: flex
+    flex-direction: row
+
+  &__choose
+    display: flex
+    flex-direction: row
+    align-items: center
+    &__list
+      display: flex
+      flex-direction: row
+      align-items: center
+    &__item
+      &:first-child
+        margin-left: 10px
+      &:not(:first-child)
+        margin-left: 15px
+
+      list-style: none
+    &-text
+      font-family: "Roboto Light", sans-serif
+      font-weight: bolder
+    &-btn
+      padding: 2px 5px
+
+      background-color: #fffd81
+      border-radius: 1em
+      overflow: hidden
+
+      text-align: center
+      font-size: 1.1em
+
+      transition: 50ms ease-in-out
+
+      &:hover, &:focus
+        background-color: darken(#fffd81, 10%)
+      &:active
+        transform: scale(95%)
+
+/* main */
+.main
+  min-height: 30svh
+  padding: 15px 100px
+  position: relative
+
+  &__section
+    &__stats
+      display: flex
+      flex-direction: row
+      justify-content: space-between
+      align-items: center
+
+  &__stats
+    &-text
+      padding: 5px 10px
+
+      display: inline-block
+  &__reset-btn
+    padding: 4px 8px
+
+    background-color: $deny-color
+
+    color: #fff
+    &:hover, &:focus
+      background-color: darken($deny-color, 10%)
+
+  &__ticket
+    &__label
+      margin-top: 5px
+    &-range
+      display: flex
+      flex-direction: column
+    &-range-input
+      &-left, &-right
+        counter-increment: none
+        counter-set: none
+        counter-reset: none
+        max-width: 3rem
+  &__submit-range
+    min-width: 8rem
+    padding: 2px
+  &__question
+    min-height: 1rem
+    //max-height: 10rem
+    margin-top: 10px
+
+    //overflow: scroll
+
+    word-break: break-word
+  //&__form
+  //  display: flex
+  //  flex-direction: column
+
+  &__variants
+    word-break: break-word
+
+    &__label
+      min-height: 2em
+      margin-top: 2px
+      padding: 10px 5px
+
+      display: flex
+      flex-direction: row
+      align-items: center
+
+      border: 1px solid rgba(#000, .1)
+
+      cursor: pointer
+
+      transition: 100ms ease-in-out
+
+    &__input
+      width: 0
+      height: 0
+
+    &-letter
+      margin: auto 4px
+      align-self: center
+
+      display: inline-block
+      word-break: keep-all
+
+      font-weight: bold
+      font-family: sans-serif
+    //&-text
+      font-family: sans-serif
+  &__status
+    padding: 2px 4px
+
+    display: none
+
+    background-color: rgba($warn-color, 0.5)
+    outline: 1px solid $warn-color-border
+  &__submit
+    &-check
+      background: linear-gradient(102deg, #72ff64 -20% , #0eff7e 140% )
+      &:hover, &:focus
+        background: linear-gradient(102deg, darken(#72ff64, 8%) -20% , darken(#0eff7e, 8%) 140% )
+    &-skip
+      background: linear-gradient(41deg, #ffdf4e -20%, #ffd54b 140%)
+      &:hover, &:focus
+        background: linear-gradient(102deg, darken(#ffdf4e, 12%) -20% , darken(#ffd54b, 12%) 140% )
+
+    &-check, &-skip
+      min-width: 100%
+      min-height: 5rem
+      margin-top: 20px
+
+      font-family: "JetBrains Mono", monospace
+      font-weight: bolder
+
+      transition: 50ms ease-in-out
+
+      &:active
+        transform: scale(98%, 96%)
+
+/* footer */
+.footer
+  min-height: 10svh
+
+  border-top: 1px solid #000
+  background-color: #F9F9F9
+
+  text-align: center
+
+/* decorations */
+
+.correct
+  border: 1px solid darken(#a6ffa0, 40%)
+  background-color: #a6ffa0
+.incorrect
+  border: 1px solid darken(#ffa0a0, 20%)
+  background-color: #ffa0a0
+
+.popup
+  min-width: 10svw
+  left: 20%
+  right: 20%
+  padding: 10px 20px
+  z-index: 3
+
+  position: absolute
+
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+
+  border-radius: 6px
+
+  &-btn
+    margin-top: 20px
+    padding: 10px 20px
+
+    color: white
+
+    border: 1px solid darken(dodgerblue, 50%)
+    border-radius: 5px
+    background-color: dodgerblue
+
+    display: block
+  &-success
+    border: 1px solid darken($accept-color, 40%)
+    background-color: lighten($accept-color, 20%)
+  &-warning-weak
+    border: 1px solid darken($warn-color-border, 40%)
+    background-color: $warn-color
+
+.pseudo-variant-focus
+  &:hover, &:has(input:focus)
+    transform: translateX(5px)
+
+    border: 1px solid darken(#c8d5ff, 20%)
+    background-color: #d6dfff
+
+.pseudo-variant-checked
+  &:has(input:checked)
+    transform: translateX(10px)
+
+    border: 1px solid darken(#c8d5ff, 40%)
+    background-color: darken(#c8d5ff, 1%)
+    filter: saturate(150%)
+
+.popup-confirm
+  z-index: 4
+
+  min-width: 10svw
+  padding: 10px 20px
+
+  display: flex
+  align-items: center
+  justify-content: center
+  flex-direction: column
+
+  border-radius: 1rem
+  background-color: rgba($warn-color, 1)
+  &__buttons
+    width: 100%
+    margin-top: 0.8rem
+
+    display: flex
+    flex-direction: row
+    justify-content: space-around
+    align-items: center
+
+.yes-btn, .no-btn
+  padding: 5px 10px
+
+  font-weight: bold
+  color: white
+.yes-btn
+  background-color: $accept-color
+.no-btn
+  background-color: $deny-color
+
+.background
+  width: 100svw
+  height: 100svh
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
+  position: fixed
+  z-index: 2
+
+  display: flex
+  align-items: center
+  justify-content: center
+  flex-direction: column
+
+  background-color: rgba(0, 0, 0, 0.6)
+
+@media (orientation: portrait)
+  *
+    font-size: 1.7rem
+  .main
+    padding: 30px 20px
+    &__ticket
+      &__label
+        margin-top: 1rem
+    &__question
+      &-text
+        font-size: 80%
+
+    &__variants
+      &__label
+        padding: 0.8rem 0.4rem
+        margin-top: 0.2rem
+  .popup-btn
+    padding: 0.5rem 1rem
