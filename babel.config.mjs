@@ -1,3 +1,4 @@
+const isDev = (process.env.NODE_ENV ?? "development") === "development";
 const presets = [
     [
         "@babel/preset-env",
@@ -12,12 +13,14 @@ const presets = [
             corejs: "3.6.4",
         },
     ],
-    // [
-    //     "minify",
-    //     {
-    //         keepFnName: false
-    //     }
-    // ]
 ];
+if (isDev) {
+    presets.push([ // when running in devServer it breaks everything
+        "minify",
+        {
+            keepFnName: false
+        }
+    ]);
+}
 
 export default { presets };
