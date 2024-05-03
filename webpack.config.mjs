@@ -58,6 +58,10 @@ export default {
                     "sass-loader",
                 ]
             },
+            // {
+            //     test: /\.(png|jpe?g|gif|ico)$/i,
+            //     loader: 'file-loader',
+            // },
         ]
     },
     resolve: {
@@ -66,7 +70,7 @@ export default {
     plugins: [
         new HtmlWebpackPlugin({
             template: "./src/index.html",
-            // filename: "Kaz_history.html",
+            filename: "Kaz_history.html",
             inject: "body",
             minify: true
         }),
