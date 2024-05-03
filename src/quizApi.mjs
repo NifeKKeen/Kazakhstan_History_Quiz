@@ -5,33 +5,47 @@ export class Quiz {
     tickets: {
         ticketId: {
             testId: {
-                question: text,
-                variant: VariantObject
+                question: string,
+                variant: VariantObject,
             }
         }
     }
+    VariantObject: {
+        text: string,
+        isCorrect: Boolean,
+        id: string
+    }
+    leftTestIds: {
+        ticketId: testId[]
+    }
      */
     tickets = {};
-    leftTestIdsMap = {}; // ticketId: [ testId ] // not used tests
-    testIdToTicketIdMap = {}; // testId: ticketId
-    totalTicketCount = 0;
+    leftTestIds = {}; // not used tests
+    totalTicketCount = null;
 
-    curTicketCount = 0;
-    curTestCount = 0;
-    constructor(text, name, { ticketKeyword, correctKeyword, lineBreak } = {}) {
+    constructor(text, name, {
+        ticketKeyword = "%_V%",
+        correctKeyword = "%_C%",
+        lineBreak = "\n",
+    } = {}) {
         this.name = name;
-        this.TICKET_KEYWORD = ticketKeyword ?? "%_V%";
-        this.CORRECT_KEYWORD = correctKeyword ?? "%_C%";
-        this.LINE_BREAK = lineBreak ?? "\n";
+        this.TICKET_KEYWORD = ticketKeyword;
+        this.CORRECT_KEYWORD = correctKeyword;
+        this.LINE_BREAK = lineBreak;
+        this.TICKET_START = 1;
 
         this.propagatePlainText(text);
+
         this.totalTicketCount = Object.keys(this.tickets).length;
+
+        this.TICKET_END = this.TICKET_START + this.totalTicketCount - 1;
     }
-    getNotWasRandomTest(ticketLeftBound = 1, ticketRightBound = this.totalTicketCount) {
+    getNotWasRandomTest(ticketLeftBound = this.TICKET_START, ticketRightBound = this.TICKET_END) {
         const possibleTickets = [];
-        for (let id = ticketLeftBound; id <= ticketRightBound; ++id) {
-            if (this.leftTestIdsMap[id].length > 0) {
-                possibleTickets.push(this.leftTestIdsMap[id]);
+        for (let index = ticketLeftBound; index <= ticketRightBound; ++index) {
+            let id = index;
+            if (this.leftTestIds[id].length > 0) {
+                possibleTickets.push(this.leftTestIds[id]);
             }
         }
         if (possibleTickets.length === 0) return null;
@@ -39,11 +53,13 @@ export class Quiz {
         const index = randNum(0, possibleTickets.length);
 
         const chosenTestId = possibleTickets[index][randNum(0, possibleTickets[index].length)];
-        const chosenTicketId = this.testIdToTicketIdMap[chosenTestId];
+        const chosenTicketId = this.testIdToTicketIdMap(chosenTestId);
+        const chosenTest = this.tickets[chosenTicketId][chosenTestId];
+        if (!chosenTest) return null;
 
         return { ...this.tickets[chosenTicketId][chosenTestId], id: chosenTestId };
     }
-    getRandomTest(ticketLeftBound = 1, ticketRightBound = this.totalTicketCount) {
+    getRandomTest(ticketLeftBound = this.TICKET_START, ticketRightBound = this.TICKET_END) {
         const chosenTicket = this.tickets[randNum(ticketLeftBound, ticketRightBound + 1)];
         if (!chosenTicket) return null;
 
@@ -53,42 +69,49 @@ export class Quiz {
 
         return { ...chosenTest, id: chosenTestId };
     }
-    getMeta(ticketLeftBound = 1, ticketRightBound = this.totalTicketCount) {
+    getMeta(ticketLeftBound = this.TICKET_START, ticketRightBound = this.TICKET_END) {
         const res = {
             totalVariantCount: 0,
             totalCorrectCount: 0,
         };
-        for (let id = ticketLeftBound; id <= ticketRightBound; ++id) {
+        for (let index = ticketLeftBound; index <= ticketRightBound; ++index) {
+            let id = index;
             let testCount = Object.values(this.tickets[id]).length;
+            if (id.toString() === "1") {
+                console.log(testCount);
+                console.log(this.leftTestIds[id].length)
+            }
             res["totalVariantCount"] += testCount;
-            res["totalCorrectCount"] += testCount - this.leftTestIdsMap[id].length;
+            res["totalCorrectCount"] += testCount - this.leftTestIds[id].length;
         }
         return res;
     }
     miss(testId) {
-        testId = String(testId);
         if (!testId) {
             throw new Error("Null id is not acceptable!");
         }
-        const ticketId = this.testIdToTicketIdMap[testId];
-        let indexOfTestId = this.leftTestIdsMap[ticketId].indexOf(testId);
+        const ticketId = this.testIdToTicketIdMap(testId);
+        let indexOfTestId = this.leftTestIds[ticketId].indexOf(testId);
         if (indexOfTestId === -1) return false;
 
-        this.leftTestIdsMap[ticketId]
+        this.leftTestIds[ticketId]
             .splice(indexOfTestId, 1);
         return true;
     }
-    reset(ticketLeftBound = 1, ticketRightBound = this.totalTicketCount) {
+    reset(ticketLeftBound = this.TICKET_START, ticketRightBound = this.TICKET_END) {
         for (let id = ticketLeftBound; id <= ticketRightBound; ++id) {
-            this.leftTestIdsMap[id].length = 0;
+            this.leftTestIds[id].length = 0;
             for (let testId of Object.keys(this.tickets[id])) {
-                this.leftTestIdsMap[id].push(String(testId));
+                this.leftTestIds[id].push(String(testId));
             }
         }
         return true;
     }
     propagatePlainText(text) {
-        this.curTicketCount = 0;
+        let curTicketCount = 0;
+        let curTicketIndex = 0;
+        let isStartOfPlainText = true;
+
         const rows = text.split(this.LINE_BREAK);
 
         let currInnerTicketText = "";
@@ -96,10 +119,18 @@ export class Quiz {
             row = row.trim();
             if (!row) continue;
 
+            if (isStartOfPlainText) {
+
+            }
+            isStartOfPlainText = false;
+
             if (row.includes(this.TICKET_KEYWORD)) {
                 if (!currInnerTicketText) continue;
-                this.curTicketCount++;
-                this.propagateTicket(currInnerTicketText, this.curTicketCount);
+
+                curTicketCount++;
+
+                curTicketIndex = this.TICKET_START + curTicketCount - 1;
+                this.propagateTicket(currInnerTicketText, curTicketIndex);
                 currInnerTicketText = "";
             }
             else {
@@ -107,17 +138,20 @@ export class Quiz {
             }
         }
         if (currInnerTicketText) {
-            this.curTicketCount++;
-            this.propagateTicket(currInnerTicketText, this.curTicketCount);
+            curTicketCount++;
+
+            curTicketIndex = this.TICKET_START + curTicketCount - 1;
+            this.propagateTicket(currInnerTicketText, curTicketIndex);
         }
     }
-    propagateTicket(text, ticketId) {
-        if (!ticketId) {
+    propagateTicket(text, ticketIndex) {
+        if (!ticketIndex) {
             throw new Error("Null ticket id is not acceptable!");
         }
-        this.tickets[ticketId] = {};
+        this.tickets[ticketIndex] = {};
+        let curTestIndex = 0;
         // ticket text -> array of parsed tests
-        // NOTE: we assume that ticket does not start with a variant and
+        // NOTE: we assume that ticket does not start with a variant line and
         //       every variant of respective question is on one row
 
         const rows = text.split(this.LINE_BREAK);
@@ -134,8 +168,9 @@ export class Quiz {
             else {
                 if (isPreviousWasVariant) {
                     // current line is not variant and previous is variant: making new test chunk
-                    this.curTestCount++;
-                    this.propagateTestChunk(curTestChunk, ticketId, this.curTestCount);
+                    curTestIndex++;
+
+                    this.propagateTestChunk(curTestChunk, ticketIndex, curTestIndex);
                     curTestChunk = "";
                 }
                 isPreviousWasVariant = false;
@@ -143,27 +178,30 @@ export class Quiz {
             curTestChunk += row + this.LINE_BREAK;
         }
         if (curTestChunk.trim()) {
-            this.curTestCount++;
-            if (this.getVariantsArray(curTestChunk).length) {
-                this.propagateTestChunk(curTestChunk, ticketId, this.curTestCount);
-            }
+            if (!this.getVariantsArray(curTestChunk).length) return;
+
+            curTestIndex++;
+
+            this.propagateTestChunk(curTestChunk, ticketIndex, curTestIndex);
         }
     }
-    propagateTestChunk(testChunk, ticketId, testId) {
-        ticketId = String(ticketId);
-        testId = String(testId);
-        if (!ticketId || !testId) {
+    propagateTestChunk(testChunk, ticketIndex, testIndex) {
+        if (!ticketIndex || !testIndex) {
             throw new Error("Null id ticket or test is not acceptable!");
         }
-        this.testIdToTicketIdMap[testId] = ticketId;
-        if (!this.leftTestIdsMap[ticketId]) {
-            this.leftTestIdsMap[ticketId] = [];
+        let ticketId = String(ticketIndex);
+        let testId = `${ticketIndex}-${testIndex}`;
+        if (!this.leftTestIds[ticketId]) {
+            this.leftTestIds[ticketId] = [];
         }
-        this.leftTestIdsMap[ticketId].push(testId);
+        this.leftTestIds[ticketId].push(testId);
         this.tickets[ticketId][testId] = ({
             question: this.getQuestion(testChunk),
             variants: this.getVariantsArray(testChunk)
         });
+    }
+    testIdToTicketIdMap(testId) {
+        return testId.slice(0, testId.indexOf("-"));
     }
     pushVariant(arr, text, isCorrect) {
         arr.push({

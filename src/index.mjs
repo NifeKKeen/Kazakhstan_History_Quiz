@@ -16,7 +16,7 @@ texts.forEach(textObj => {
     );
     texts["content"] = "";
 });
-const app = new App(document, quizes);
+window.app = new App(document, quizes);
 app.initializeApp();
 
 document.body.style.display = "block";

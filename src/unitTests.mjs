@@ -6,15 +6,47 @@ const tests = [
     () => {
         const quizes = [];
         texts.forEach(textObj => {
-            quizes.push(new Quiz(textObj["content"], textObj["name"], {lineBreak: "\n"}));
+            quizes.push(new Quiz(textObj["content"], textObj["name"]));
             texts["content"] = "";
         });
 
         quizes.forEach(quiz => {
             for (let [, ticket] of Object.entries(quiz.tickets)) {
                 for (let [, test] of Object.entries(ticket)) {
-                    notStrictEqual(test["variants"].filter(variant => variant["isCorrect"]).length, 0 , "Required at lease one correct variant");
-                    strictEqual(test["variants"].filter(variant => variant["isCorrect"]).length, 1, "Multiple correct variants");
+                    const details = `quizName: ${quiz["name"]}, testId: ${test["id"]}`;
+                    notStrictEqual(
+                        test["variants"].filter(variant => variant["isCorrect"]).length,
+                        0 ,
+                        `Required at lease one correct variant. ${details}`
+                    );
+                    strictEqual(
+                        test["variants"].filter(variant => variant["isCorrect"]).length,
+                        1,
+                        `Multiple correct variants. ${details}`
+                    );
+                    strictEqual(
+                        test["question"].includes(quiz.CORRECT_KEYWORD),
+                        false,
+                        `Correct keyword is in the question. ${details}`
+                    );
+                    strictEqual(test["question"].includes(quiz.TICKET_KEYWORD),
+                        false,
+                        `Ticket keyword is in the question. ${details}`
+                    );
+
+                    test["variants"].forEach(variant => {
+                        let text = variant["text"];
+                        strictEqual(
+                            text.includes(quiz.CORRECT_KEYWORD),
+                            false,
+                            `Correct keyword is in the variant. ${details}`
+                        );
+                        strictEqual(
+                            text.includes(quiz.TICKET_KEYWORD),
+                            false,
+                            `Ticket keyword is in the variant. ${details}`
+                        );
+                    })
                 }
             }
         });
@@ -33,8 +65,8 @@ const tests = [
         let quiz = new Quiz(testTxt, "name");
 
         let tickets = quiz.tickets;
-        let ticket = tickets[1];
-        let test = ticket[1];
+        let ticket = tickets["1"];
+        let test = ticket["1-1"];
 
         strictEqual(Object.keys(tickets).length, 1);
         strictEqual(Object.keys(ticket).length, 1);

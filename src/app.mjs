@@ -52,14 +52,14 @@ export class App {
     initializeApp() {
         setInterval(this.handleEyesBreak.bind(this), 1000 * 600);
 
-        if (localStorage.getItem("history")) {
+        if (localStorage.getItem("Kanich-history")) {
             try {
-                const metaObj = JSON.parse(localStorage.getItem("history"));
+                const metaObj = JSON.parse(localStorage.getItem("Kanich-history"));
                 for (let [quizName, metaData] of Object.entries(metaObj)) {
                     Object.assign(this.quizes[quizName], metaData);
                 }
             } catch (e) {
-                localStorage.removeItem("history");
+                localStorage.removeItem("Kanich-history");
             }
         }
         if (localStorage.getItem("lastTicket")) {
@@ -344,10 +344,11 @@ export class App {
         const metaObj = {};
         for (let [quizName, quiz] of Object.entries(this.quizes)) {
             metaObj[quizName] = {
-                leftTestIdsMap: quiz.leftTestIdsMap
+                leftTestIds: quiz["leftTestIds"]
             };
         }
-        localStorage.setItem("history", JSON.stringify(metaObj));
+        console.log(metaObj)
+        localStorage.setItem("Kanich-history", JSON.stringify(metaObj));
     }
     findCheckedVariantEl() {
         for (let variantEl of this.testFormEl.children) {

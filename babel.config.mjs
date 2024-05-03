@@ -14,7 +14,7 @@ const presets = [
         },
     ],
 ];
-if (isDev) {
+if (!isDev) {
     presets.push([ // when running in devServer it breaks everything
         "minify",
         {
