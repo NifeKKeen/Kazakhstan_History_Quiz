@@ -77,10 +77,7 @@ export class Quiz {
         for (let index = ticketLeftBound; index <= ticketRightBound; ++index) {
             let id = index;
             let testCount = Object.values(this.tickets[id]).length;
-            if (id.toString() === "1") {
-                console.log(testCount);
-                console.log(this.leftTestIds[id].length)
-            }
+
             res["totalVariantCount"] += testCount;
             res["totalCorrectCount"] += testCount - this.leftTestIds[id].length;
         }

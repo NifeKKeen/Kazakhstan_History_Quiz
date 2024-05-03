@@ -347,7 +347,6 @@ export class App {
                 leftTestIds: quiz["leftTestIds"]
             };
         }
-        console.log(metaObj)
         localStorage.setItem("Kanich-history", JSON.stringify(metaObj));
     }
     findCheckedVariantEl() {
