@@ -14,6 +14,10 @@ const tests = [
             for (let [, ticket] of Object.entries(quiz.tickets)) {
                 for (let [, test] of Object.entries(ticket)) {
                     const details = `quizName: ${quiz["name"]}, testId: ${test["id"]}`;
+
+                    // console.log(test["question"])
+                    // test["variants"].forEach(v => console.log(v.text, v.isCorrect))
+
                     notStrictEqual(
                         test["variants"].filter(variant => variant["isCorrect"]).length,
                         0 ,

@@ -1,5 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
+import { compressQuizText } from "./util.mjs";
+
 let objsTxt = "";
 const textPath = path.resolve("./texts");
 
@@ -9,7 +11,8 @@ for (let fileName of textFilesDir) {
     if (!path.parse(fileName).ext) { // isDirectory
         continue;
     }
-    const data = fs.readFileSync(`${textPath}/${fileName}`);
+    let data = fs.readFileSync(`${textPath}/${fileName}`, "utf-8");
+    data = compressQuizText(data);
 
     objsTxt += `{ 
         content:\`${data}\`, 
