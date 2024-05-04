@@ -1,7 +1,9 @@
 import path from 'path';
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import { fileURLToPath } from 'url';
+import dotenv from "dotenv";
 
+const PROJECT_VERSION = dotenv.configDotenv({path: "./.env" }).parsed["PROJECT_VERSION"];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -70,7 +72,7 @@ export default {
     plugins: [
         new HtmlWebpackPlugin({
             template: "./src/index.html",
-            filename: "index.html",
+            filename: isDev ? "index.html" : `Kaz_History_${PROJECT_VERSION}.html`,
             inject: "body",
             minify: true,
         }),
