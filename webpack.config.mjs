@@ -70,13 +70,13 @@ export default {
     plugins: [
         new HtmlWebpackPlugin({
             template: "./src/index.html",
-            filename: "Kaz_history.html",
+            filename: "index.html",
             inject: "body",
-            minify: true
+            minify: true,
         }),
     ],
     devServer: isDev ? {
         port: 8000,
-        open: true
+        open: true,
     } : undefined,
 };

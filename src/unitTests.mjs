@@ -1,6 +1,6 @@
 import { Quiz } from "./quizApi.mjs";
 import { texts } from "./texts.mjs";
-import {notStrictEqual, strictEqual, } from "assert";
+import { notStrictEqual, strictEqual, } from "assert";
 
 const tests = [
     () => {
@@ -70,7 +70,7 @@ const tests = [
 
         let tickets = quiz.tickets;
         let ticket = tickets["1"];
-        let test = ticket["1-1"];
+        let test = ticket["1-12"];
 
         strictEqual(Object.keys(tickets).length, 1);
         strictEqual(Object.keys(ticket).length, 1);

@@ -12,24 +12,30 @@ export class App {
 
     handlers will return true if they are finished, false otherwise
      */
+    curTheme = "white";
+
     curQuiz = null;
     curTicketCount = 0;
     curTicketLeftBound = 0;
     curTicketRightBound = 0;
 
     curCorrect = ""; // correct variant text
-    firstTry = null;
+    curTicketId = "";
+    firstTry = null; // result of first try of guessing
 
     errorTimeoutId = -1;
     successTimeoutId = -1;
-    constructor(htmlEl, quizes) {
-        this.testSectionEl = htmlEl.querySelector(".main__section__test");
+    constructor(rootEl, quizes) {
+        this.rootEl = rootEl;
+        this.testSectionEl = rootEl.querySelector(".main__section__test");
         this.quizes = quizes;
 
-        this.chooseListEl = htmlEl.querySelector(".header__choose__list");
+        this.chooseListEl = rootEl.querySelector(".header__choose__list");
+        this.themeSwitchInputEl = rootEl.querySelector(".header__theme-switch input[name=theme-switch]");
 
-        this.statsResultEl = htmlEl.querySelector(".main__stats-result");
-        this.statsResetBtn = htmlEl.querySelector(".main__reset-btn");
+        this.statsResultEl = rootEl.querySelector(".main__stats-result");
+        this.statsAccuracyEl = rootEl.querySelector(".main__stats-accuracy");
+        this.statsResetBtn = rootEl.querySelector(".main__reset-btn");
 
         this.ticketRangeEl = this.testSectionEl.querySelector(".main__ticket-range");
         this.ticketRangeLeftInput = this.ticketRangeEl.querySelector(".main__ticket-range-input-left");
@@ -44,6 +50,7 @@ export class App {
         this.testSkipBtn = this.testSectionEl.querySelector(".main__submit-skip");
         this.testStatusEl = this.testSectionEl.querySelector(".main__status");
 
+        this.themeSwitchInputEl.addEventListener("change", this.handleThemeChange.bind(this));
         this.statsResetBtn.addEventListener("click", this.handleStatsReset.bind(this));
         this.ticketRangeSubmitBtn.addEventListener("click", this.handleTicketRangeChange.bind(this));
         this.testCheckBtn.addEventListener("click", this.handleSubmitCheck.bind(this));
@@ -73,6 +80,13 @@ export class App {
             this.renderStats();
             this.renderTest();
         }
+        if (localStorage.getItem("Kanich-theme")) {
+            this.curTheme = localStorage.getItem("Kanich-theme");
+            if (this.curTheme === "theme-black") {
+                this.themeSwitchInputEl.checked = "true";
+            }
+            this.switchTheme(this.curTheme);
+        }
 
         this.renderTestsMenu();
     }
@@ -84,6 +98,7 @@ export class App {
         if (!this.curTest) {
             return false;
         }
+        this.curTicketId = this.curQuiz.testIdToTicketId(this.curTest.id);
         this.curCorrect = this.curTest["variants"].find(variant => variant["isCorrect"])["text"];
         this.firstTry = null;
         return true;
@@ -233,6 +248,8 @@ export class App {
         return true;
     }
     handleStatsReset() {
+        if (!this.curQuiz) return;
+
         const confirmPopup = this.createConfirmPopup(
             `Таңдалған нұсқалар аралығы үшін [${this.curTicketLeftBound}-${this.curTicketRightBound}] дұрыс жауаптар өшіріледі!`,
             this.resetStats.bind(this, this.curTicketLeftBound, this.curTicketRightBound)
@@ -263,15 +280,18 @@ export class App {
             "pseudo-variant-focus"
         );
 
-        if (this.firstTry === null && isCorrect) {
+        if (this.firstTry === null && isCorrect) { // counting as correct guess
             this.firstTry = isCorrect;
             this.curQuiz.miss(this.curTest["id"]);
-            this.renderStats();
-            this.refreshLocalStorage();
+            this.curQuiz.makeGuess(this.curTicketId, true);
         }
-        else if (this.firstTry === null) {
+        else if (this.firstTry === null && !isCorrect) { // counting as incorrect guess
             this.firstTry = isCorrect;
+            this.curQuiz.makeGuess(this.curTicketId, false);
         }
+        this.renderStats();
+        this.refreshLocalStorage();
+
         return true;
     }
     handleSubmitSkip(ev) {
@@ -286,6 +306,19 @@ export class App {
 
         this.hideStatus();
         return true;
+    }
+    handleThemeChange(ev) {
+        let newTheme;
+        if (!ev.target.checked) {
+            newTheme = "theme-white";
+            this.curTheme = newTheme;
+            this.switchTheme(newTheme);
+        } else {
+            newTheme = "theme-black";
+            this.curTheme = newTheme;
+            this.switchTheme(newTheme);
+        }
+        this.refreshLocalStorage();
     }
     handleEyesBreak() {
         this.handleSetupError("ticketRange", "Перерыв для глаз!", 10000);
@@ -306,7 +339,19 @@ export class App {
     }
     renderStats() {
         const metaData = this.curQuiz.getMeta(this.curTicketLeftBound, this.curTicketRightBound);
-        this.statsResultEl.textContent = `${metaData["totalCorrectCount"]} / ${metaData["totalVariantCount"]}`;
+        let correctCount = metaData.totalCorrectCount;
+        let totalCount = metaData.totalTestCount;
+        let answeredCount = metaData.answeredCount;
+        let correctAnsweredCount = metaData.correctAnsweredCount;
+
+        let correctAnsweredRelation;
+        if (answeredCount !== 0) {
+            correctAnsweredRelation = Math.round(correctAnsweredCount / answeredCount * 1e4) / 1e2;
+        } else {
+            correctAnsweredRelation = 0;
+        }
+        this.statsResultEl.textContent = `${correctCount} / ${totalCount}`;
+        this.statsAccuracyEl.textContent = `${correctAnsweredRelation}%`
     }
     renderTest() {
         this.testFormEl.innerHTML = "";
@@ -340,13 +385,16 @@ export class App {
     refreshLocalStorage() {
         localStorage.setItem("lastLeftBound", String(this.curTicketLeftBound));
         localStorage.setItem("lastRightBound", String(this.curTicketRightBound));
-        localStorage.setItem("lastTicket", this.curQuiz["name"]);
+        localStorage.setItem("lastTicket", this.curQuiz.name);
         const metaObj = {};
         for (let [quizName, quiz] of Object.entries(this.quizes)) {
             metaObj[quizName] = {
-                leftTestIds: quiz["leftTestIds"]
+                leftTestIds: quiz.leftTestIds,
+                answered: quiz.answered,
+                correctAnswered: quiz.correctAnswered
             };
         }
+        localStorage.setItem("Kanich-theme", this.curTheme);
         localStorage.setItem("Kanich-history", JSON.stringify(metaObj));
     }
     findCheckedVariantEl() {
@@ -490,5 +538,31 @@ export class App {
         itemEl.append(chooseBtn);
 
         return itemEl;
+    }
+    switchTheme(classNameTemplate) {
+        const postFixMain = "-main";
+        const postFixSub = "-sub";
+        const postFixInput = "-input";
+        [
+            this.rootEl, this.ticketLabelEl
+        ].forEach(element => {
+            if (!element) return;
+            element.classList.forEach(elClassName => elClassName.startsWith("theme") ? element.classList.remove(elClassName) : null);
+            element.classList.add(classNameTemplate + postFixMain);
+        });
+        [
+            this.rootEl.querySelector("header"), this.rootEl.querySelector("footer")
+        ].forEach(element => {
+            if (!element) return;
+            element.classList.forEach(elClassName => elClassName.startsWith("theme") ? element.classList.remove(elClassName) : null);
+            element.classList.add(classNameTemplate + postFixSub);
+        });
+        [
+            this.ticketRangeEl
+        ].forEach(element => {
+            if (!element) return;
+            element.classList.forEach(elClassName => elClassName.startsWith("theme") ? element.classList.remove(elClassName) : null);
+            element.classList.add(classNameTemplate + postFixInput);
+        });
     }
 }

@@ -2,6 +2,14 @@ $deny-color: #ff2727
 $accept-color: #33ff05
 $warn-color: #ff0
 $warn-color-border: #ffd54b
+$white-color-main: #fff
+$white-color-sub: darken($white-color-main, .9)
+$black-color-main: #2b2b2b
+$black-color-sub: lighten($black-color-main, 1.1)
+$variant-hover-color: rgba(#7392ff, .5)
+$ticket-selection-color: #fffd81
+$correct-color: rgba(#37ff28, .35)
+$incorrect-color: rgba(#ff2424, .35)
 
 *
   box-sizing: border-box
@@ -9,6 +17,9 @@ $warn-color-border: #ffd54b
   padding: 0
   font-family: PT Root UI,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol
   font-size: 1.1rem
+
+*:focus-visible
+  outline: 2px solid #99aeff
 
 button
   cursor: pointer
@@ -22,7 +33,7 @@ body
   padding: 10px 100px
 
   border-bottom: 1px solid black
-  background-color: #F9F9F9
+  background-color: darken($white-color-main, 1%)
 
   &__title
     font-family: "Roboto Light", sans-serif
@@ -30,6 +41,7 @@ body
   &__nav
     display: flex
     flex-direction: row
+    justify-content: space-between
 
   &__choose
     display: flex
@@ -52,7 +64,7 @@ body
     &-btn
       padding: 2px 5px
 
-      background-color: #fffd81
+      background-color: $ticket-selection-color
       border-radius: 1em
       overflow: hidden
 
@@ -62,7 +74,7 @@ body
       transition: 50ms ease-in-out
 
       &:hover, &:focus
-        background-color: darken(#fffd81, 10%)
+        background-color: darken($ticket-selection-color, 10%)
       &:active
         transform: scale(95%)
 
@@ -89,7 +101,7 @@ body
 
     background-color: $deny-color
 
-    color: #fff
+    color: white
     &:hover, &:focus
       background-color: darken($deny-color, 10%)
 
@@ -162,13 +174,19 @@ body
     outline: 1px solid $warn-color-border
   &__submit
     &-check
-      background: linear-gradient(102deg, #72ff64 -20% , #0eff7e 140% )
+      $first-color: adjust-hue($accept-color, -10deg)
+      $second-color: adjust-hue($accept-color, 5deg)
+
+      background: radial-gradient($first-color -20%, $second-color 140% )
       &:hover, &:focus
-        background: linear-gradient(102deg, darken(#72ff64, 8%) -20% , darken(#0eff7e, 8%) 140% )
+        background: radial-gradient(darken($first-color, 4%) -20% , darken($second-color, 4%) 140% )
     &-skip
-      background: linear-gradient(41deg, #ffdf4e -20%, #ffd54b 140%)
+      $first-color: adjust-hue($warn-color, -13deg)
+      $second-color: adjust-hue($warn-color, 0deg)
+
+      background: radial-gradient($first-color -0%, $second-color 140%)
       &:hover, &:focus
-        background: linear-gradient(102deg, darken(#ffdf4e, 12%) -20% , darken(#ffd54b, 12%) 140% )
+        background: radial-gradient(darken($first-color, 4%) -20% , darken($second-color, 4%) 140% )
 
     &-check, &-skip
       min-width: 100%
@@ -188,18 +206,18 @@ body
   min-height: 10svh
 
   border-top: 1px solid #000
-  background-color: #F9F9F9
+  background-color: $white-color-sub
 
   text-align: center
 
 /* decorations */
 
 .correct
-  border: 1px solid darken(#a6ffa0, 40%)
-  background-color: #a6ffa0
+  border: 1px solid darken($correct-color, 40%)
+  background-color: $correct-color
 .incorrect
-  border: 1px solid darken(#ffa0a0, 20%)
-  background-color: #ffa0a0
+  border: 1px solid darken($incorrect-color, 20%)
+  background-color: $incorrect-color
 
 .popup
   min-width: 10svw
@@ -216,6 +234,8 @@ body
   align-items: center
 
   border-radius: 6px
+
+  color: black
 
   &-btn
     margin-top: 20px
@@ -239,15 +259,15 @@ body
   &:hover, &:has(input:focus)
     transform: translateX(5px)
 
-    border: 1px solid darken(#c8d5ff, 20%)
-    background-color: #d6dfff
+    border: 1px solid darken($variant-hover-color, 20%)
+    background-color: $variant-hover-color
 
 .pseudo-variant-checked
   &:has(input:checked)
     transform: translateX(10px)
 
-    border: 1px solid darken(#c8d5ff, 40%)
-    background-color: darken(#c8d5ff, 1%)
+    border: 1px solid darken($variant-hover-color, 40%)
+    background-color: darken($variant-hover-color, 1%)
     filter: saturate(150%)
 
 .popup-confirm
@@ -263,6 +283,8 @@ body
 
   border-radius: 1rem
   background-color: rgba($warn-color, 1)
+
+  color: black
   &__buttons
     width: 100%
     margin-top: 0.8rem
@@ -298,6 +320,28 @@ body
   flex-direction: column
 
   background-color: rgba(0, 0, 0, 0.6)
+
+.theme-white-main
+  background-color: $white-color-main
+  color: black
+
+.theme-black-main
+  background-color: $black-color-main
+  color: white
+
+.theme-white-sub
+  background-color: $white-color-sub
+  color: black
+
+.theme-black-sub
+  background-color: $black-color-sub
+  color: white
+
+.theme-white-input
+  background-color: $white-color-main
+
+.theme-black-input
+  background-color: $black-color-main
 
 @media (orientation: portrait)
   *
