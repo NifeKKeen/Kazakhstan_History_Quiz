@@ -12,6 +12,7 @@ export class App {
 
     handlers will return true if they are finished, false otherwise
      */
+    APP_VERSION = "1.2.0";
     curTheme = "white";
 
     curQuiz = null;
@@ -58,6 +59,13 @@ export class App {
     }
     initializeApp() {
         setInterval(this.handleEyesBreak.bind(this), 1000 * 600);
+
+        if (!localStorage.getItem("Kanich-version") ||
+            /^1\.[0-1]\./.test(localStorage.getItem("Kanich-version"))) {
+            localStorage.removeItem("history");
+            localStorage.removeItem("Kanich-history");
+        }
+        localStorage.setItem("Kanich-version", this.APP_VERSION);
 
         if (localStorage.getItem("Kanich-history")) {
             try {
@@ -383,18 +391,24 @@ export class App {
         }
     }
     refreshLocalStorage() {
-        localStorage.setItem("lastLeftBound", String(this.curTicketLeftBound));
-        localStorage.setItem("lastRightBound", String(this.curTicketRightBound));
-        localStorage.setItem("lastTicket", this.curQuiz.name);
+        if (this.curTicketLeftBound)
+            localStorage.setItem("lastLeftBound", String(this.curTicketLeftBound));
+        if (this.curTicketRightBound)
+            localStorage.setItem("lastRightBound", String(this.curTicketRightBound));
+        if (this.curQuiz && this.curQuiz.name)
+            localStorage.setItem("lastTicket", this.curQuiz.name);
         const metaObj = {};
-        for (let [quizName, quiz] of Object.entries(this.quizes)) {
-            metaObj[quizName] = {
-                leftTestIds: quiz.leftTestIds,
-                answered: quiz.answered,
-                correctAnswered: quiz.correctAnswered
-            };
+        if (this.quizes) {
+            for (let [quizName, quiz] of Object.entries(this.quizes)) {
+                metaObj[quizName] = {
+                    leftTestIds: quiz.leftTestIds,
+                    answered: quiz.answered,
+                    correctAnswered: quiz.correctAnswered
+                };
+            }
         }
-        localStorage.setItem("Kanich-theme", this.curTheme);
+        if (this.curTheme)
+            localStorage.setItem("Kanich-theme", this.curTheme);
         localStorage.setItem("Kanich-history", JSON.stringify(metaObj));
     }
     findCheckedVariantEl() {

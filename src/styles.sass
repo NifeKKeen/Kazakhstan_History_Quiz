@@ -40,7 +40,7 @@ body
     font-size: 2rem
   &__nav
     display: flex
-    flex-direction: row
+    flex-flow: row wrap
     justify-content: space-between
 
   &__choose
@@ -346,14 +346,15 @@ body
 @media (orientation: portrait)
   *
     font-size: 1.7rem
+  .header__theme-switch
+    input[name="theme-switch"]
+      width: 40px
+      height: 40px
   .main
     padding: 30px 20px
     &__ticket
       &__label
         margin-top: 1rem
-    &__question
-      &-text
-        font-size: 80%
 
     &__variants
       &__label
