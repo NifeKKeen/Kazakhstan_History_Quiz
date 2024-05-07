@@ -536,9 +536,6 @@ export class App {
         inputEl.addEventListener("focusin", ev => {
             ev.target.checked = true;
         });
-        inputEl.addEventListener("focusout", ev => {
-            ev.target.checked = false;
-        });
         variantLabelEl.addEventListener("keydown", ev => {
             if (ev.key.toLowerCase() === "enter") {
                 this.handleSubmitCheck(ev);
