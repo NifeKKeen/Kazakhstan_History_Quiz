@@ -533,8 +533,11 @@ export class App {
 
         variantLabelEl.append(inputEl, orderLetterEl, variantTextEl);
 
-        inputEl.addEventListener("focus", ev => {
+        inputEl.addEventListener("focusin", ev => {
             ev.target.checked = true;
+        });
+        inputEl.addEventListener("focusout", ev => {
+            ev.target.checked = false;
         });
         variantLabelEl.addEventListener("keydown", ev => {
             if (ev.key.toLowerCase() === "enter") {
