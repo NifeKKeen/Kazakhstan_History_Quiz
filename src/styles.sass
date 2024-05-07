@@ -6,7 +6,7 @@ $white-color-main: #fff
 $white-color-sub: darken($white-color-main, .9)
 $black-color-main: #2b2b2b
 $black-color-sub: lighten($black-color-main, 1.1)
-$variant-hover-color: rgba(#7392ff, .5)
+$variant-hover-color: rgba(#7392ff, .35)
 $ticket-selection-color: #fffd81
 $correct-color: rgba(#37ff28, .35)
 $incorrect-color: rgba(#ff2424, .35)
@@ -259,15 +259,15 @@ body
   &:hover, &:has(input:focus)
     transform: translateX(5px)
 
-    border: 1px solid darken($variant-hover-color, 20%)
+    border: 1px solid $variant-hover-color
     background-color: $variant-hover-color
 
 .pseudo-variant-checked
   &:has(input:checked)
     transform: translateX(10px)
 
-    border: 1px solid darken($variant-hover-color, 40%)
-    background-color: darken($variant-hover-color, 1%)
+    border: 1px solid rgba(darken($variant-hover-color, 20%), .35)
+    background-color: rgba(darken($variant-hover-color, 5%), .45)
     filter: saturate(150%)
 
 .popup-confirm
