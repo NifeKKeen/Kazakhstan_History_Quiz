@@ -56,6 +56,14 @@ export class App {
         this.ticketRangeSubmitBtn.addEventListener("click", this.handleTicketRangeChange.bind(this));
         this.testCheckBtn.addEventListener("click", this.handleSubmitCheck.bind(this));
         this.testSkipBtn.addEventListener("click", this.handleSubmitSkip.bind(this));
+        this.rootEl.addEventListener("keydown", ev => {
+            if (ev.key.toLowerCase() === " ") {
+                this.handleSubmitSkip();
+                const variantEl = this.testFormEl.querySelector(".main__variants__label");
+                if (!variantEl) return;
+                variantEl.focus();
+            }
+        });
     }
     initializeApp() {
         setInterval(this.handleEyesBreak.bind(this), 1000 * 600);
@@ -302,9 +310,8 @@ export class App {
 
         return true;
     }
-    handleSubmitSkip(ev) {
+    handleSubmitSkip() {
         if (!this.handleTicketWasChosen()) return false;
-        ev.preventDefault();
 
         this.clearTest();
 
@@ -525,6 +532,16 @@ export class App {
         variantTextEl.textContent = variantText;
 
         variantLabelEl.append(inputEl, orderLetterEl, variantTextEl);
+
+        inputEl.addEventListener("focus", ev => {
+            ev.target.checked = true;
+        });
+        variantLabelEl.addEventListener("keydown", ev => {
+            if (ev.key.toLowerCase() === "enter") {
+                this.handleSubmitCheck(ev);
+            }
+        });
+
         return variantLabelEl;
     }
     createQuestion(questionText) {
