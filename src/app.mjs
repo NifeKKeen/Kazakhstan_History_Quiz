@@ -12,7 +12,7 @@ export class App {
 
     handlers will return true if they are finished, false otherwise
      */
-    APP_VERSION = "1.2.1";
+    APP_VERSION = "1.2.2";
     curTheme = "white";
 
     curQuiz = null;
