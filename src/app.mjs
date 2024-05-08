@@ -24,6 +24,8 @@ export class App {
     curTicketId = "";
     firstTry = null; // result of first try of guessing
 
+    lastFocusedEl = null;
+
     errorTimeoutId = -1;
     successTimeoutId = -1;
     constructor(rootEl, quizes) {
@@ -64,9 +66,15 @@ export class App {
                 variantEl.focus();
             }
         });
+        this.rootEl.addEventListener("focusin", ev => {
+            if (!ev.target || ev.target.getAttribute("data-ignore-last-focus")) {
+                return;
+            }
+            this.saveAsLastFocusEl(ev.target);
+        });
     }
     initializeApp() {
-        setInterval(this.handleEyesBreak.bind(this), 1000 * 600);
+        setInterval(this.handleEyesBreak.bind(this), 1000 * 60 * 10);
 
         if (!localStorage.getItem("Kanich-version") ||
             /^1\.[0-1]\./.test(localStorage.getItem("Kanich-version"))) {
@@ -191,7 +199,7 @@ export class App {
 
         if (!this.handleTicketWasChosen()) return false;
         if (!this.changeTicketRange(leftBound, rightBound)) {
-            this.handleSetupError("ticketRange", `Нұсқа аралығы қате берілген`, 4000);
+            this.handleSetupError("warn", `Нұсқа аралығы қате берілген`, 4000);
             return false;
         }
 
@@ -206,8 +214,8 @@ export class App {
         this.handleSetupSuccess("Айстан болды");
         return true;
     }
-    handleSetupError(type = "ticketRange", text = "", liveTime = 2000) { // type: [ticketRange]
-        if (type === "ticketRange") {
+    handleSetupError(type = "warn", text = "", liveTime = 2000) { // type: [warn]
+        if (type === "warn") {
             if (this.errorTimeoutId !== -1) {
                 clearTimeout(this.errorTimeoutId);
             }
@@ -217,6 +225,7 @@ export class App {
 
             this.removeAllTextPopups();
             this.ticketLabelEl.append(warningEl);
+            warningEl.querySelector("button").focus();
 
             this.errorTimeoutId = setTimeout(
                 () => {
@@ -271,6 +280,7 @@ export class App {
             this.resetStats.bind(this, this.curTicketLeftBound, this.curTicketRightBound)
         );
         document.body.append(confirmPopup);
+        confirmPopup.querySelector("button").focus();
 
         return true;
     }
@@ -336,7 +346,7 @@ export class App {
         this.refreshLocalStorage();
     }
     handleEyesBreak() {
-        this.handleSetupError("ticketRange", "Перерыв для глаз!", 10000);
+        this.handleSetupError("warn", "Перерыв для глаз!", 20000);
         return true;
     }
     renderTestsMenu() {
@@ -434,6 +444,9 @@ export class App {
         this.testStatusEl.textContent = "";
         return true;
     }
+    saveAsLastFocusEl(el) { // asynchronous function
+        this.lastFocusedEl = el;
+    }
     removeAllTextPopups() {
         const popupClasses = ["popup-warning", "popup-success"];
         for (let className of popupClasses) {
@@ -459,8 +472,15 @@ export class App {
 
         popupCloseBtn.classList.add("popup-btn");
         popupCloseBtn.textContent = "Бопты";
+        popupCloseBtn.setAttribute("data-ignore-last-focus", "true");
 
-        popupCloseBtn.addEventListener("click", () => popupEl.remove());
+        popupCloseBtn.addEventListener("click", ev => {
+            ev.preventDefault();
+            popupEl.remove()
+            if (this.lastFocusedEl) {
+                this.lastFocusedEl.focus();
+            }
+        });
 
         popupEl.append(popupTextEl, popupCloseBtn);
         return popupEl;
@@ -482,7 +502,8 @@ export class App {
 
         yesBtn.textContent = "Аха";
         yesBtn.classList.add("yes-btn");
-        yesBtn.addEventListener("click", () => {
+        yesBtn.addEventListener("click", ev => {
+            ev.preventDefault();
             callback();
 
             this.removeBackground();
@@ -492,14 +513,19 @@ export class App {
             this.renderStats();
             this.changeTest();
             this.renderTest();
+            this.lastFocusedEl.focus();
         });
+        yesBtn.setAttribute("data-ignore-last-focus", "true");
 
         noBtn.textContent = "Передумал";
         noBtn.classList.add("no-btn");
-        noBtn.addEventListener("click", () => {
+        noBtn.addEventListener("click", ev => {
+            ev.preventDefault();
             this.removeBackground();
             popupEl.remove();
+            this.lastFocusedEl.focus();
         });
+        noBtn.setAttribute("data-ignore-last-focus", "true");
 
         popupEl.classList.add("background");
 
