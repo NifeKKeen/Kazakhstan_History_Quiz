@@ -444,7 +444,7 @@ export class App {
         this.testStatusEl.textContent = "";
         return true;
     }
-    saveAsLastFocusEl(el) { // asynchronous function
+    saveAsLastFocusEl(el) {
         this.lastFocusedEl = el;
     }
     removeAllTextPopups() {
