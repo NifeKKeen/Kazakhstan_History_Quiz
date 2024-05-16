@@ -1,6 +1,8 @@
 import { shuffle } from "./util.mjs";
 export class App {
     /*
+    set functions change object's state
+
     render re-renders DOM according to app's properties, they do not receive any argument
     render functions do not affect internal properties
 
@@ -12,15 +14,16 @@ export class App {
 
     handlers will return true if they are finished, false otherwise
      */
-    APP_VERSION = "1.2.2";
+    APP_VERSION = "1.3.0";
     curTheme = "white";
 
     curQuiz = null;
     curTicketCount = 0;
     curTicketLeftBound = 0;
     curTicketRightBound = 0;
+    curLang = "kz";
 
-    curCorrect = ""; // correct variant text
+    curCorrectElOrder = null; // correct variant HTML element
     curTicketId = "";
     firstTry = null; // result of first try of guessing
 
@@ -40,14 +43,14 @@ export class App {
         this.statsAccuracyEl = rootEl.querySelector(".main__stats-accuracy");
         this.statsResetBtn = rootEl.querySelector(".main__reset-btn");
 
-        this.ticketRangeEl = this.testSectionEl.querySelector(".main__ticket-range");
-        this.ticketRangeLeftInput = this.ticketRangeEl.querySelector(".main__ticket-range-input-left");
-        this.ticketRangeRightInput = this.ticketRangeEl.querySelector(".main__ticket-range-input-right");
-        this.ticketRangeSubmitBtn = this.testSectionEl.querySelector(".main__submit-range");
+        this.ticketLabelEl = rootEl.querySelector(".main__ticket__label");
+        this.ticketRangeEl = rootEl.querySelector(".main__ticket-range");
+        this.ticketRangeLeftInput = rootEl.querySelector(".main__ticket-range-input-left");
+        this.ticketRangeRightInput = rootEl.querySelector(".main__ticket-range-input-right");
+        this.ticketRangeSubmitBtn = rootEl.querySelector(".main__submit-range");
 
         this.testQuestionEl = this.testSectionEl.querySelector(".main__question");
         this.testFormEl = this.testSectionEl.querySelector(".main__form");
-        this.ticketLabelEl = this.testSectionEl.querySelector(".main__ticket__label");
 
         this.testCheckBtn = this.testSectionEl.querySelector(".main__submit-check");
         this.testSkipBtn = this.testSectionEl.querySelector(".main__submit-skip");
@@ -94,15 +97,14 @@ export class App {
             }
         }
         if (localStorage.getItem("lastTicket")) {
-            this.changeTicket(localStorage.getItem("lastTicket"));
+            this.setChangeTicket(localStorage.getItem("lastTicket"));
             this.curTicketLeftBound = +localStorage.getItem("lastLeftBound") || 1;
             this.curTicketRightBound = +localStorage.getItem("lastRightBound") || this.curTicketCount;
 
-            this.changeTest();
+            this.handleTestChange();
 
             this.renderRangeInputs();
             this.renderStats();
-            this.renderTest();
         }
         if (localStorage.getItem("Kanich-theme")) {
             this.curTheme = localStorage.getItem("Kanich-theme");
@@ -114,31 +116,41 @@ export class App {
 
         this.renderTestsMenu();
     }
-    resetStats(leftBound, rightBound) {
+    setResetStats(leftBound, rightBound) {
         this.curQuiz.reset(leftBound, rightBound);
     }
-    changeTest() {
+    setChangeTest() {
         this.curTest = this.curQuiz.getNotWasRandomTest(this.curTicketLeftBound, this.curTicketRightBound);
         if (!this.curTest) {
             return false;
         }
+
         this.curTicketId = this.curQuiz.testIdToTicketId(this.curTest.id);
-        this.curCorrect = this.curTest["variants"].find(variant => variant["isCorrect"])["text"];
-        this.firstTry = null;
+
         return true;
     }
-    clearTest() {
+    setCorrectEl() { // depends on content of testFormEl
+        let correctText = this.curTest["variants"].find(variant => variant["isCorrect"])["text"];
+        for (let labelEl of this.testFormEl.querySelectorAll(".main__variants__label")) {
+            let variantTextSpanEl = labelEl.querySelector(".main__variants-text");
+            if (variantTextSpanEl.textContent === correctText) {
+                this.curCorrectElOrder = labelEl.dataset.order;
+                break;
+            }
+        }
+    }
+    setClearTest() {
         this.curTest = {
             question: "",
             variants: [],
             id: null
         };
 
-        this.curCorrect = "";
+        this.curCorrectElOrder = null;
         this.firstTry = null;
         return true;
     }
-    changeTicket(quizName) {
+    setChangeTicket(quizName) {
         const quiz = this.quizes[quizName];
 
         if (!quiz) return false;
@@ -146,9 +158,10 @@ export class App {
         this.curTicketCount = Object.keys(quiz.tickets).length;
         this.curTicketLeftBound = 1;
         this.curTicketRightBound = this.curTicketCount;
+        this.curLang = this.curQuiz.lang ?? "kz";
         return true;
     }
-    changeTicketRange(leftBound = 1, rightBound = this.curTicketCount) {
+    setChangeTicketRange(leftBound = 1, rightBound = this.curTicketCount) {
         if (typeof leftBound !== "number" || typeof rightBound !== "number") {
             return false;
         }
@@ -179,17 +192,23 @@ export class App {
         return true;
     }
     handleTicketChange(ev) {
-        const quizName = ev.currentTarget.textContent;
-        if (!this.changeTicket(quizName)) {
+        const quizName = ev.currentTarget.dataset.quizName;
+        if (!this.setChangeTicket(quizName)) {
             this.handleStatus("Қанат где-то лоханулся");
             return false;
         }
 
-        this.changeTest();
+        this.handleTestChange();
 
         this.renderStats();
-        this.renderTest();
         this.refreshLocalStorage();
+        return true;
+    }
+    handleTestChange() {
+        this.setClearTest();
+        this.setChangeTest();
+        this.renderTest();
+        this.setCorrectEl();
         return true;
     }
     handleTicketRangeChange(ev) {
@@ -198,15 +217,14 @@ export class App {
         let rightBound = +this.ticketRangeRightInput.value;
 
         if (!this.handleTicketWasChosen()) return false;
-        if (!this.changeTicketRange(leftBound, rightBound)) {
+        if (!this.setChangeTicketRange(leftBound, rightBound)) {
             this.handleSetupError("warn", `Нұсқа аралығы қате берілген`, 4000);
             return false;
         }
 
-        this.changeTest();
+        this.handleTestChange();
 
         this.renderRangeInputs();
-        this.renderTest();
         this.renderStats(this.curTicketLeftBound, this.curTicketRightBound);
         this.refreshLocalStorage();
 
@@ -277,7 +295,7 @@ export class App {
 
         const confirmPopup = this.createConfirmPopup(
             `Таңдалған нұсқалар аралығы үшін [${this.curTicketLeftBound}-${this.curTicketRightBound}] дұрыс жауаптар өшіріледі!`,
-            this.resetStats.bind(this, this.curTicketLeftBound, this.curTicketRightBound)
+            this.setResetStats.bind(this, this.curTicketLeftBound, this.curTicketRightBound)
         );
         document.body.append(confirmPopup);
         confirmPopup.querySelector("button").focus();
@@ -292,9 +310,7 @@ export class App {
 
         const checkedVariantEl = this.findCheckedVariantEl();
 
-        const checkedVariantText = checkedVariantEl.querySelector(".main__variants-text").textContent;
-
-        const isCorrect = checkedVariantText === this.curCorrect;
+        const isCorrect = (checkedVariantEl.dataset.order === this.curCorrectElOrder);
         if (isCorrect) {
             checkedVariantEl.classList.add("correct");
         }
@@ -323,11 +339,7 @@ export class App {
     handleSubmitSkip() {
         if (!this.handleTicketWasChosen()) return false;
 
-        this.clearTest();
-
-        this.changeTest();
-
-        this.renderTest();
+        this.handleTestChange();
 
         this.hideStatus();
         return true;
@@ -380,11 +392,13 @@ export class App {
     }
     renderTest() {
         this.testFormEl.innerHTML = "";
+        this.testQuestionEl.lang = this.curLang;
+        this.testFormEl.lang = this.curLang;
         this.renderRangeInputs();
 
         if (!this.curTest || !this.curTest["id"]) {
             this.handleSetupSuccess("Осы тесттін нұсқа аралығы үшін сұрақтар бітті!", 5000);
-            this.clearTest();
+            this.setClearTest();
         }
 
         this.renderQuestionEl();
@@ -398,14 +412,15 @@ export class App {
     renderVariantsEl() {
         let index = 0;
         shuffle(this.curTest["variants"]);
-        for (let variant of this.curTest["variants"]) {
+        this.curTest["variants"].forEach((variant, i) => {
             let text = variant["text"];
             let orderLetter = String.fromCharCode('A'.charCodeAt(0) + index);
 
             const variantEl = this.createVariant(text, orderLetter);
+            variantEl.dataset.order = String(i);
             this.testFormEl.append(variantEl);
             index++;
-        }
+        });
     }
     refreshLocalStorage() {
         if (this.curTicketLeftBound)
@@ -511,8 +526,7 @@ export class App {
 
             this.refreshLocalStorage();
             this.renderStats();
-            this.changeTest();
-            this.renderTest();
+            this.handleTestChange();
             this.lastFocusedEl.focus();
         });
         yesBtn.setAttribute("data-ignore-last-focus", "true");
@@ -586,11 +600,12 @@ export class App {
 
         return chooseBtn;
     }
-    createTicketChooseItem(text) {
+    createTicketChooseItem(text, quizName = text) {
         const itemEl = document.createElement("li");
         const chooseBtn = this.createTicketChooseBtn(text);
 
         itemEl.classList.add("header__choose__item");
+        itemEl.dataset.quizName = quizName;
 
         itemEl.append(chooseBtn);
 

@@ -24,16 +24,19 @@ export class Quiz {
     totalTicketCount = null;
     answered = {};
     correctAnswered = {};
+    lang = "kz";
 
     constructor(text, name, {
         ticketKeyword = "%_V%",
         correctKeyword = "%_C%",
         lineBreak = "\n",
+        lang = "kz",
     } = {}) {
         this.name = name;
         this.TICKET_KEYWORD = ticketKeyword;
         this.CORRECT_KEYWORD = correctKeyword;
         this.LINE_BREAK = lineBreak;
+        this.lang = lang;
         this.TICKET_START = 1;
 
         this.propagatePlainText(text);
