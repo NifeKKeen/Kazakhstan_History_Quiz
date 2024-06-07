@@ -23,7 +23,7 @@ export class App {
     curTicketRightBound = 0;
     curLang = "kz";
 
-    curCorrectElOrder = null; // correct variant HTML element
+    curCorrectElOrder = null;
     curTicketId = "";
     firstTry = null; // result of first try of guessing
 
