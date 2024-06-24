@@ -4,13 +4,13 @@ import { notStrictEqual, strictEqual, } from "assert";
 
 const tests = [
     () => {
-        const quizes = [];
+        const quizzes = [];
         texts.forEach(textObj => {
-            quizes.push(new Quiz(textObj["content"], textObj["name"]));
+            quizzes.push(new Quiz(textObj["content"], textObj["name"]));
             texts["content"] = "";
         });
 
-        quizes.forEach(quiz => {
+        quizzes.forEach(quiz => {
             for (let [, ticket] of Object.entries(quiz.tickets)) {
                 for (let [, test] of Object.entries(ticket)) {
                     const details = `quizName: ${quiz["name"]}, testId: ${test["id"]}`;

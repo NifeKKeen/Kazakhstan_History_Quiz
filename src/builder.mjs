@@ -8,7 +8,7 @@ const textPath = path.resolve("./texts");
 const textFilesDir = fs.readdirSync(textPath);
 
 for (let fileName of textFilesDir) {
-    if (!path.parse(fileName).ext) { // isDirectory
+    if (!path.parse(fileName).ext) {  // isDirectory
         continue;
     }
     let data = fs.readFileSync(`${textPath}/${fileName}`, "utf-8");

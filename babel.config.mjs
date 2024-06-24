@@ -15,7 +15,7 @@ const presets = [
     ],
 ];
 if (!isDev) {
-    presets.push([ // when running in devServer it breaks everything
+    presets.push([  // when running in devServer it breaks everything
         "minify",
         {
             keepFnName: false

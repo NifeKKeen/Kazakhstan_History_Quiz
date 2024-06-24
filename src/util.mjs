@@ -50,7 +50,7 @@ export function compressQuizVariant(line, correctKeyword = "%_C%") {
                 }
             }
             else if (index === 1) {
-                partLine = line.split(")").slice(1).join(")"); // taking rest of split after ")"
+                partLine = line.split(")").slice(1).join(")");  // taking rest of split after ")"
                 if (partLine.includes(correctKeyword)) {
                     res = stripWhiteSpaceAround(partLine, correctKeyword);
                 } else {
@@ -94,38 +94,4 @@ export function getFirstLines(text, count = 1, lineBreak = "\n") {
         res += ch;
     }
     return res;
-}
-export class MexStructure {
-    numSet = new Set();
-    constructor(startExclusionFrom = 0) {
-        this.startExclusionFrom = startExclusionFrom;
-    }
-    add(val) {
-        if (this.numSet.has(val)) {
-            val = this.mexFrom(val);
-        }
-        this.numSet.add(val);
-        return val;
-    }
-    remove(val) {
-        this.numSet.delete(val);
-        return val;
-    }
-    mex() {
-        let index = this.startExclusionFrom;
-        while(this.numSet.has(index)) {
-            index++;
-        }
-        return index;
-    }
-    mexFrom(startIndex) {
-        let index = startIndex;
-        while(this.numSet.has(index)) {
-            index++;
-        }
-        return index;
-    }
-    clear() {
-        this.numSet.clear();
-    }
 }

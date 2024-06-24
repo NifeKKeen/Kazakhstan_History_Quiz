@@ -1,4 +1,4 @@
-import {getFirstLines, MexStructure, randNum} from "./util.mjs";
+import {getFirstLines, randNum} from "./util.mjs";
 
 export class Quiz {
     /*
@@ -20,7 +20,7 @@ export class Quiz {
     }
      */
     tickets = {};
-    leftTestIds = {}; // not used tests
+    leftTestIds = {};  // not used tests
     totalTicketCount = null;
     answered = {};
     correctAnswered = {};
@@ -175,7 +175,6 @@ export class Quiz {
         const rows = text.split(this.LINE_BREAK);
         let isPreviousWasVariant = false;
         let curTestChunk = "";
-        let mexStructre = new MexStructure(1);
 
         for (let row of rows) {
             row = row.trim();
@@ -187,7 +186,7 @@ export class Quiz {
                 if (isPreviousWasVariant) {
                     // current line is not variant and previous is variant: making new test chunk
 
-                    this.propagateTestChunk(curTestChunk, ticketIndex, mexStructre);
+                    this.propagateTestChunk(curTestChunk, ticketIndex);
                     curTestChunk = "";
                 }
                 isPreviousWasVariant = false;
@@ -197,20 +196,19 @@ export class Quiz {
         if (curTestChunk.trim()) {
             if (!this.getVariantsArray(curTestChunk).length) return;
 
-            this.propagateTestChunk(curTestChunk, ticketIndex, mexStructre);
+            this.propagateTestChunk(curTestChunk, ticketIndex);
         }
     }
-    propagateTestChunk(testChunk, ticketIndex, mexStructure = new MexStructure()) {
+    propagateTestChunk(testChunk, ticketIndex) {
         let testChunkStartLine = getFirstLines(testChunk, 1, "\n");
-        let quiestionIndex = this.getQuestionIndex(testChunkStartLine);
+        let questionIndex = this.getQuestionIndex(testChunkStartLine);
         let testIndex;
 
-        if (quiestionIndex !== -1) {
-            testIndex = quiestionIndex;
+        if (questionIndex !== -1) {
+            testIndex = questionIndex;
         } else {
             testIndex = 1;
         }
-        testIndex = mexStructure.add(testIndex); // returns least available index from the set
 
         if (!ticketIndex || !testIndex) {
             throw new Error("Null id ticket or test is not acceptable!");
@@ -263,10 +261,10 @@ export class Quiz {
 
         let variantsCount = 0;
         let correctVariantsCount = 0;
-        let isVariantsStarted = false; // we started to handle variants
+        let isVariantsStarted = false;  // we started to handle variants
 
-        let curVariant = ""; // variant text
-        let isCurVariantCorrect = false; // cur checked variant is correct
+        let curVariant = "";  // variant text
+        let isCurVariantCorrect = false;  // cur checked variant is correct
 
         const rows = testChunk.split(this.LINE_BREAK);
 
@@ -278,7 +276,7 @@ export class Quiz {
                 isVariantsStarted = true;
                 variantsCount++;
 
-                if (curVariant) { // variant is processed before
+                if (curVariant) {  // variant is processed before
                     curVariant = this.trimVariant(curVariant);
                     this.pushVariant(
                         res,
@@ -298,7 +296,7 @@ export class Quiz {
                 correctVariantsCount++;
             }
         }
-        if (isVariantsStarted && curVariant) { // variant is not processed yet
+        if (isVariantsStarted && curVariant) {  // variant is not processed yet
             curVariant = this.trimVariant(curVariant);
             this.pushVariant(
                 res,
@@ -309,14 +307,14 @@ export class Quiz {
         return res;
     }
     isStartOfVariant(text) {
-        return /^[a-zA-Zа-яА-Я] *\)/.test(text); // "[letter])..." template
+        return /^[a-zA-Zа-яА-Я] *\)/.test(text);  // "[letter])..." template
     }
     trimQuestion(question) {
-        let it = 0; // iterator
-        let flag = false; // to find out if question has "."
+        let it = 0;  // iterator
+        let flag = false;  // to find out if question has "."
         for (let char of question) {
             it++;
-            if (char === ".") { // end of question numeric
+            if (char === ".") {  // end of question numeric
                 flag = true;
                 break;
             }
@@ -325,11 +323,11 @@ export class Quiz {
         return question.substring(it).trim();
     }
     trimVariant(variant) {
-        let it = 0; // iterator
-        let flag = false; // to find out if variant has ")"
+        let it = 0;  // iterator
+        let flag = false;  // to find out if variant has ")"
         for (let letter of variant) {
             it++;
-            if (letter === ")") { // end of order letter
+            if (letter === ")") {  // end of order letter
                 flag = true;
                 break;
             }
@@ -338,13 +336,13 @@ export class Quiz {
         let startOfCORRECT = variant.indexOf(this.CORRECT_KEYWORD);
         if (startOfCORRECT !== -1)
             variant = variant.substring(0, startOfCORRECT) +
-                variant.substring(startOfCORRECT + this.CORRECT_KEYWORD.length); // cutting correct keyword
+                variant.substring(startOfCORRECT + this.CORRECT_KEYWORD.length);  // cutting correct keyword
 
         if (!flag) return variant;
         return variant.substring(it).trim();
     }
     getQuestionIndex(line) {
-        if (!/^ *\d+ *\./.test(line)) { // line does not match "  {digits}    .{*}"
+        if (!/^ *\d+ *\./.test(line)) {  // line does not match "  {digits}    .{*}"
             return -1;
         }
         let res = "";

@@ -25,16 +25,16 @@ export class App {
 
     curCorrectElOrder = null;
     curTicketId = "";
-    firstTry = null; // result of first try of guessing
+    firstTry = null;  // result of first try of guessing
 
     lastFocusedEl = null;
 
     errorTimeoutId = -1;
     successTimeoutId = -1;
-    constructor(rootEl, quizes) {
+    constructor(rootEl, quizzes) {
         this.rootEl = rootEl;
         this.testSectionEl = rootEl.querySelector(".main__section__test");
-        this.quizes = quizes;
+        this.quizzes = quizzes;
 
         this.chooseListEl = rootEl.querySelector(".header__choose__list");
         this.themeSwitchInputEl = rootEl.querySelector(".header__theme-switch input[name=theme-switch]");
@@ -90,7 +90,7 @@ export class App {
             try {
                 const metaObj = JSON.parse(localStorage.getItem("Kanich-history"));
                 for (let [quizName, metaData] of Object.entries(metaObj)) {
-                    Object.assign(this.quizes[quizName], metaData);
+                    Object.assign(this.quizzes[quizName], metaData);
                 }
             } catch (e) {
                 localStorage.removeItem("Kanich-history");
@@ -129,7 +129,7 @@ export class App {
 
         return true;
     }
-    setCorrectEl() { // depends on content of testFormEl
+    setCorrectEl() {  // depends on content of testFormEl
         let correctText = this.curTest["variants"].find(variant => variant["isCorrect"])["text"];
         for (let labelEl of this.testFormEl.querySelectorAll(".main__variants__label")) {
             let variantTextSpanEl = labelEl.querySelector(".main__variants-text");
@@ -151,7 +151,7 @@ export class App {
         return true;
     }
     setChangeTicket(quizName) {
-        const quiz = this.quizes[quizName];
+        const quiz = this.quizzes[quizName];
 
         if (!quiz) return false;
         this.curQuiz = quiz;
@@ -232,7 +232,7 @@ export class App {
         this.handleSetupSuccess("Айстан болды");
         return true;
     }
-    handleSetupError(type = "warn", text = "", liveTime = 2000) { // type: [warn]
+    handleSetupError(type = "warn", text = "", liveTime = 2000) {  // type: [warn]
         if (type === "warn") {
             if (this.errorTimeoutId !== -1) {
                 clearTimeout(this.errorTimeoutId);
@@ -322,12 +322,12 @@ export class App {
             "pseudo-variant-focus"
         );
 
-        if (this.firstTry === null && isCorrect) { // counting as correct guess
+        if (this.firstTry === null && isCorrect) {  // counting as correct guess
             this.firstTry = isCorrect;
             this.curQuiz.miss(this.curTest["id"]);
             this.curQuiz.makeGuess(this.curTicketId, true);
         }
-        else if (this.firstTry === null && !isCorrect) { // counting as incorrect guess
+        else if (this.firstTry === null && !isCorrect) {  // counting as incorrect guess
             this.firstTry = isCorrect;
             this.curQuiz.makeGuess(this.curTicketId, false);
         }
@@ -363,7 +363,7 @@ export class App {
     }
     renderTestsMenu() {
         this.chooseListEl.innerHTML = "";
-        for (let quizName of Object.keys(this.quizes)) {
+        for (let quizName of Object.keys(this.quizzes)) {
             const chooseItemEl = this.createTicketChooseItem(quizName);
 
             chooseItemEl.addEventListener("click", this.handleTicketChange.bind(this), {});
@@ -430,8 +430,8 @@ export class App {
         if (this.curQuiz && this.curQuiz.name)
             localStorage.setItem("lastTicket", this.curQuiz.name);
         const metaObj = {};
-        if (this.quizes) {
-            for (let [quizName, quiz] of Object.entries(this.quizes)) {
+        if (this.quizzes) {
+            for (let [quizName, quiz] of Object.entries(this.quizzes)) {
                 metaObj[quizName] = {
                     leftTestIds: quiz.leftTestIds,
                     answered: quiz.answered,
